@@ -3,6 +3,10 @@
 
 CWD=$(pwd)
 didSimulationDiffAnywhere=0
+didSimulationDiffAnywhereFirst=0
+didSimulationDiffAnywhereSecond=0
+localDiffOne=0.0;
+localDiffTwo=0.0;
 
 # determine tolerance
 testTol=0.000000015
@@ -20,7 +24,27 @@ if [ -f $CWD/PASS ]; then
 else
     mpiexec -np 4 ../../naluX -i ablStableElem.i -o ablStableElem.log
     determine_pass_fail $testTol "ablStableElem.log" "ablStableElem.norm" "ablStableElem.norm.gold"
-    didSimulationDiffAnywhere="$?"
+    didSimulationDiffAnywhereFirst="$?"
+    localDiffOne=$GlobalMaxSolutionDiff
+    if [ "$didSimulationDiffAnywhereFirst" -gt 0 ]; then
+        didSimulationDiffAnywhere=1
+    fi
+
+    # run the second case
+    mpiexec -np 4 ../../naluX -i ablStableElemMoeng.i -o ablStableElemMoeng.log
+    determine_pass_fail $testTol "ablStableElemMoeng.log" "ablStableElemMoeng.norm" "ablStableElemMoeng.norm.gold"
+    didSimulationDiffAnywhereSecond="$?"
+    localDiffTwo=$GlobalMaxSolutionDiff
+    if [ "$didSimulationDiffAnywhereSecond" -gt 0 ]; then
+        didSimulationDiffAnywhere=1
+    fi
+
+    # check who is greater
+    if [ $(echo " $localDiffOne > $localDiffTwo " | bc) -eq 1 ]; then
+        GlobalMaxSolutionDiff=$localDiffOne
+    else
+        GlobalMaxSolutionDiff=$localDiffTwo
+    fi 
 fi
 
 # write the file based on final status
@@ -32,11 +56,13 @@ else
 fi
 
 # report it; 30 spaces
-GlobalPerformanceTime=`grep "STKPERF: Total Time" ablStableElem.log  | awk '{print $4}'`
+GlobalPerformanceTimeFirst=`grep "STKPERF: Total Time" ablStableElem.log  | awk '{print $4}'`
+GlobalPerformanceTimeSecond=`grep "STKPERF: Total Time" ablStableElemMoeng.log  | awk '{print $4}'`
+totalPerfTime=`echo "$GlobalPerformanceTimeFirst + $GlobalPerformanceTimeSecond" | bc `
 if [ $PASS_STATUS -ne 1 ]; then
-    echo -e "..ablStableElem............... FAILED":" " $GlobalPerformanceTime " s" " max diff: " $GlobalMaxSolutionDiff
+    echo -e "..ablStableElem............... FAILED":" " $totalPerfTime " s" " max diff: " $GlobalMaxSolutionDiff
 else
-    echo -e "..ablStableElem............... PASSED":" " $GlobalPerformanceTime " s"
+    echo -e "..ablStableElem............... PASSED":" " $totalPerfTime " s"
 fi
 
 exit

@@ -902,10 +902,12 @@ fi
 
 cd $baseGitHubCWD/runNaluRtest/nightly/ablStableElem
 cp $NaluRtestCWD/nightly/ablStableElem/ablStableElem.i $baseGitHubCWD/runNaluRtest/nightly/ablStableElem
+cp $NaluRtestCWD/nightly/ablStableElem/ablStableElemMoeng.i $baseGitHubCWD/runNaluRtest/nightly/ablStableElem
 cp $NaluRtestCWD/mesh/abl_1km_cube_toy.g $baseGitHubCWD/runNaluRtest/nightly/ablStableElem
 cp $NaluRtestCWD/xml/milestone.xml $baseGitHubCWD/runNaluRtest/nightly/ablStableElem
 cp $NaluRtestCWD/nightly/ablStableElem/ablStableElem.sh $baseGitHubCWD/runNaluRtest/nightly/ablStableElem
 cp $NaluRtestCWD/nightly/ablStableElem/ablStableElem.norm.gold $baseGitHubCWD/runNaluRtest/nightly/ablStableElem
+cp $NaluRtestCWD/nightly/ablStableElem/ablStableElemMoeng.norm.gold $baseGitHubCWD/runNaluRtest/nightly/ablStableElem
 
 # run it...  
 ./ablStableElem.sh
